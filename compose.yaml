@@ -1,7 +1,27 @@
+version: '3.9'
+
 services:
   web:
     build: .
+    depends_on:
+      - db
+    volumes:
+      - ./:/code:ro
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
     ports:
-      - "8000:5000"
-  redis:
-    image: "redis:alpine"
+      - "8000:80"
+
+  db:
+      image: postgres:15-alpine
+      volumes:
+        - postgres_data:/var/lib/postgresql/data/
+      expose:
+        - 5433
+      environment:
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - POSTGRES_DB=${POSTGRES_DB}
+
+volumes:
+      postgres_data: 
