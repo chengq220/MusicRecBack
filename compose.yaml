@@ -6,9 +6,10 @@ services:
     depends_on:
       - db
     volumes:
-      - ./:/code:ro
+      - ./:/code
     environment:
       - DATABASE_URL=${DATABASE_URL}
+      - WATCHPACK_POLLING=true
     ports:
       - "8000:80"
 
