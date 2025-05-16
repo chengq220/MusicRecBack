@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db import database
+import app.query as qy
 
 origins = [
     "http://localhost",
@@ -13,11 +14,12 @@ db = database()
 
 @asynccontextmanager
 async def lifespan(app):
-    await database.connect()
+    await db.connect()
     yield
-    await database.disconnect()
+    await db.disconnect()
 
 app = FastAPI(lifespan=lifespan)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,18 +28,9 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-backPref = "Japanese anime song"
-
-
 @app.get("/", tags=["root"])
 async def read_root() -> dict:
     return {"message": "Welcome to this amazing project."}
-
-# @app.get("/ytMusicSearch", tags=["music search"])
-# async def getYTResults() -> dict:
-#     # res = query(backPref)
-#     # return { "result": res}
-#     return []
 
 @app.post("/pref", tags=["preference"])
 async def set_pref(request) -> dict:
@@ -47,11 +40,11 @@ async def set_pref(request) -> dict:
         "data": f"Successfully received: {request.query}"
     }
 
-@app.get("/dbtest", tags=["db test"])
+@app.get("/query", tags=["db query item"])
 async def dbtest() -> dict:
     global db
-    context = "SELECT * FROM musicdata LIMIT 1;"
-    res = await db.query(context)
+    context = "SELECT * FROM musicdata LIMIT 10;"
+    res = await qy.execContext(db, context)
     return {
         "result": res
     }

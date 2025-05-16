@@ -8,25 +8,21 @@ class database():
     
     async def connect(self):
         load_dotenv()
-        dbname = os.getenv("POSTGRES_DB")
-        user = os.getenv("POSTGRES_USER")
-        password = os.getenv("POSTGRES_PASSWORD")
         dburl = os.getenv("DATABASE_URL")
+        try:
+            self.pool = await asyncpg.create_pool(
+                dsn=dburl, min_size=1, max_size=10
+            )
+        except Exception as e:
+            print("Error occured when trying to initialized a connection to database") 
 
-        self.pool = await asyncpg.create_pool(
-            user=user,
-            password=password,
-            database=dbname,
-            host=dburl,
-            port=5432
-        )
     
     async def disconnect(self):
-        self.pool.close()
+        if self.pool is not None:
+            try:
+                self.pool.close()
+            except Exception as e:
+                print("Error occured when trying to close pool")
 
-    async def query(self, context):
-        async with database.pool.acquire() as connection:
-            row = await connection.fetchrow(context)
-            if row is not None:
-                return row
-        return None
+    def getPool(self):
+        return self.pool
