@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.db import database
-import app.query as qy
+from app.db.DBManager import DBManager
+from app.migration.migrate import registerUser
+from fastapi import HTTPException
 
 origins = [
     "http://localhost",
@@ -10,10 +11,11 @@ origins = [
     "http://localhost:3000/"
 ]
 
-db = database()
+db = DBManager()
 
 @asynccontextmanager
 async def lifespan(app):
+    global db
     await db.connect()
     yield
     await db.disconnect()
@@ -32,20 +34,30 @@ app.add_middleware(
 async def read_root() -> dict:
     return {"message": "Welcome to this amazing project."}
 
-@app.post("/pref", tags=["preference"])
-async def set_pref(request) -> dict:
-    global backPref 
-    backPref= request.query
+@app.post("/register", tags=["register user"])
+async def register(user: dict) -> dict:
+    global db 
+    username, password = user['username'], user['password']
+    users = await DBManager.getUser(db, username)
+    if(len(users) > 0):
+        raise HTTPException(status_code=101, detail="Username already exists")
+    encrypted = DBManager.encryptPassword(password = password)
+    res = await registerUser(db, username = username, password = encrypted)
     return {
-        "data": f"Successfully received: {request.query}"
+        "res": res
     }
 
-@app.get("/query", tags=["db query item"])
-async def dbtest() -> dict:
-    global db
-    context = "SELECT * FROM musicdata LIMIT 10;"
-    res = await qy.execContext(db, context)
+@app.post("/login", tags=["login user"])
+async def verify(user:dict) -> dict:
+    global db 
+    username, password = user['username'], user['password']
+    users = await DBManager.getUser(db, username)
+    if(len(users) == 0):
+        raise HTTPException(status_code=101, detail="User does not exist")
+    encrypted = DBManager.encryptPassword(password = password)
+    if(encrypted != users[0].password):
+        raise HTTPException(status_code=101, detail="Password is incorrect")
+    res = users #change to jwt (token based approach)
     return {
-        "result": res
+        "res": 1
     }
-

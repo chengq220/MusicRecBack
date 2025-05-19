@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class MusicWrap(BaseModel):
     idx: int
@@ -22,3 +23,12 @@ class MusicWrap(BaseModel):
     tempo: float
     time_signature: int
     track_genre: str
+
+
+class UserWrap(BaseModel):
+    id: int
+    username: str
+    password: str
+    fav_genre: Optional[str]
+    fav_artist: Optional[str]
+    fav_time: Optional[int]
