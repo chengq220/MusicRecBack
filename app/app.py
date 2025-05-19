@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.db.DBManager import DBManager
 from app.migration.migrate import registerUser
 from fastapi import HTTPException
+from app.auth.auth_handler import signJWT, decodeJWT
 
 origins = [
     "http://localhost",
@@ -57,7 +58,7 @@ async def verify(user:dict) -> dict:
     encrypted = DBManager.encryptPassword(password = password)
     if(encrypted != users[0].password):
         raise HTTPException(status_code=101, detail="Password is incorrect")
-    res = users #change to jwt (token based approach)
+    res = signJWT(users[0])
     return {
-        "res": 1
+        "auth_token": res
     }
