@@ -1,10 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db.DBManager import DBManager
 from app.migration.migrate import registerUser
-from fastapi import HTTPException
-from app.auth.auth_handler import signJWT, decodeJWT
+from app.auth.auth_handler import signJWT, jwtVerify
 
 origins = [
     "http://localhost",
@@ -49,7 +48,7 @@ async def register(user: dict) -> dict:
     }
 
 @app.post("/login", tags=["login user"])
-async def verify(user:dict) -> dict:
+async def login(user:dict) -> dict:
     global db 
     username, password = user['username'], user['password']
     users = await DBManager.getUser(db, username)
@@ -58,7 +57,7 @@ async def verify(user:dict) -> dict:
     encrypted = DBManager.encryptPassword(password = password)
     if(encrypted != users[0].password):
         raise HTTPException(status_code=101, detail="Password is incorrect")
-    res = signJWT(users[0])
+    res = signJWT(users[0].username)
     return {
         "auth_token": res
     }

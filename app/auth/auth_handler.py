@@ -2,18 +2,17 @@ from dotenv import load_dotenv
 import os
 import time
 import jwt
+from fastapi import HTTPException
 
 load_dotenv()
 
-def signJWT(user) -> dict[str, str]:
+def signJWT(username:str) -> str:
     payload = {
-        "username": user.username,
+        "username": username,
         "expires": time.time() + 600
     }
     token = jwt.encode(payload, os.getenv("SECRET"), algorithm=os.getenv("ALGORITHM"))
-    return {
-        "access_token": token
-    }
+    return token
 
 def decodeJWT(token :str) -> dict:
     try:
@@ -21,3 +20,9 @@ def decodeJWT(token :str) -> dict:
         return decoded_token if decoded_token["expires"] >= time.time() else None
     except:
         return {}
+    
+def jwtVerify(token:str) -> dict:
+    decoded = decodeJWT(token)
+    if not decoded:
+        raise HTTPException(status_code=401, detail="Token not correct")
+    return decoded
