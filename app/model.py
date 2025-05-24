@@ -31,4 +31,4 @@ class UserWrap(BaseModel):
     password: str
     fav_genre: Optional[str]
     fav_artist: Optional[str]
-    fav_time: Optional[int]
+    new_user: Optional[bool]

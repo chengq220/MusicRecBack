@@ -1,4 +1,4 @@
-from app.model import MusicWrap
+from app.model import MusicWrap, UserWrap
 
 async def getTableSize(db, table):
     context = f'SELECT COUNT(*) FROM "{table}";'
@@ -11,3 +11,10 @@ async def getMusicBetweenIndices(db, lb, ub):
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(context, lb, ub)
         return [MusicWrap(**item) for item in res]
+    
+
+async def getPref(db, user):
+    context = "SELECT * FROM users WHERE username = $1;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(context, user)
+        return [UserWrap(**item) for item in res]

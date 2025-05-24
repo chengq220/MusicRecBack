@@ -2,8 +2,21 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db.DBManager import DBManager
-from app.migration.migrate import registerUser
+import app.migration.migrate as mm
 from app.auth.auth_handler import signJWT, jwtVerify
+import app.db.query as dbq
+import random 
+
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("error.log"),  # Save to file
+        logging.StreamHandler()           # Also print to console (optional)
+    ]
+)
 
 origins = [
     "http://localhost",
@@ -34,7 +47,7 @@ app.add_middleware(
 async def read_root() -> dict:
     return {"message": "Welcome to this amazing project."}
 
-@app.post("/register", tags=["register user"])
+@app.post("/register", tags=["Authentication"])
 async def register(user: dict) -> dict:
     global db 
     username, password = user['username'], user['password']
@@ -42,12 +55,12 @@ async def register(user: dict) -> dict:
     if(len(users) > 0):
         raise HTTPException(status_code=101, detail="Username already exists")
     encrypted = DBManager.encryptPassword(password = password)
-    res = await registerUser(db, username = username, password = encrypted)
+    res = await mm.registerUser(db, username = username, password = encrypted)
     return {
         "res": res
     }
 
-@app.post("/login", tags=["login user"])
+@app.post("/login", tags=["Authentication"])
 async def login(user:dict) -> dict:
     global db 
     username, password = user['username'], user['password']
@@ -57,7 +70,48 @@ async def login(user:dict) -> dict:
     encrypted = DBManager.encryptPassword(password = password)
     if(encrypted != users[0].password):
         raise HTTPException(status_code=101, detail="Password is incorrect")
-    res = signJWT(users[0].username)
+    userInfo = {
+        "username": users[0].username,
+        "new_user": users[0].new_user
+    }
+    res = signJWT(userInfo)
     return {
         "auth_token": res
+    }
+
+@app.post("/updatePref", tags=["User Preference"])
+async def updatePref(pref: dict) -> dict:
+    global db 
+    user, artist, genre = pref['user'], pref['artist'], pref['genre']
+    res = await mm.updateUserPreference(db, user = user, artist = artist, genre = genre)
+    return {
+        "res": res
+    }
+
+@app.post("/getPref", tags=["User Preference"])
+async def getPref(user: dict) -> dict:
+    global db 
+    user = user["user"]
+    res = await dbq.getPref(db, user = user)
+    return {
+        "res": res
+    }
+
+# @app.post("/decodeToken", tags = ["decode token"])
+# async def decodeToken(inp:dict) -> dict:
+#     print("im getting called")
+#     with open("output.txt", "w") as file:
+#         file.write(f"token: {inp["token"]}")
+#     return jwtVerify(inp["token"])
+
+@app.get("/getMusic", tags=["Music"])
+async def getMusic() -> dict:
+    global db 
+    NUM_DESIRE = 20
+    size = await dbq.getTableSize(db, "musicdata")
+    lb = random.randint(1, size - NUM_DESIRE)
+    ub = lb + NUM_DESIRE
+    res = await dbq.getMusicBetweenIndices(db, lb, ub)
+    return {
+        "result": res
     }

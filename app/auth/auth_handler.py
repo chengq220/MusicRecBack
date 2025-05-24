@@ -6,9 +6,10 @@ from fastapi import HTTPException
 
 load_dotenv()
 
-def signJWT(username:str) -> str:
+def signJWT(user:dict) -> str:
     payload = {
-        "username": username,
+        "username": user["username"],
+        "new_user": user["new_user"],
         "expires": time.time() + 600
     }
     token = jwt.encode(payload, os.getenv("SECRET"), algorithm=os.getenv("ALGORITHM"))
@@ -16,9 +17,9 @@ def signJWT(username:str) -> str:
 
 def decodeJWT(token :str) -> dict:
     try:
-        decoded_token = jwt.decode(token, os.getenv("SECRET"), algorithm=os.getenv("ALGORITHM"))
+        decoded_token = jwt.decode(token, os.getenv("SECRET"), algorithms=[os.getenv("ALGORITHM")])
         return decoded_token if decoded_token["expires"] >= time.time() else None
-    except:
+    except Exception as e:
         return {}
     
 def jwtVerify(token:str) -> dict:
@@ -26,3 +27,4 @@ def jwtVerify(token:str) -> dict:
     if not decoded:
         raise HTTPException(status_code=401, detail="Token not correct")
     return decoded
+
