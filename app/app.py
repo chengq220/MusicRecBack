@@ -104,8 +104,8 @@ async def getPref(user: dict) -> dict:
 #         file.write(f"token: {inp["token"]}")
 #     return jwtVerify(inp["token"])
 
-@app.get("/getMusic", tags=["Music"])
-async def getMusic() -> dict:
+@app.post("/getMusic", tags=["Music"])
+async def getMusic(userInfo:dict) -> dict:
     global db 
     NUM_DESIRE = 20
     size = await dbq.getTableSize(db, "musicdata")
