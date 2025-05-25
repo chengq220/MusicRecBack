@@ -18,3 +18,11 @@ async def getPref(db, user):
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(context, user)
         return [UserWrap(**item) for item in res]
+    
+async def getPlaylist(db, username):
+    query = "SELECT * FROM playlist WHERE username = $1;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(query, username)
+        return res
+    
+    

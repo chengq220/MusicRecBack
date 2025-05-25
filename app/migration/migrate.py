@@ -14,10 +14,14 @@ async def registerUser(db, username, password):
         return res
 
 async def updateUserPreference(db, user, artist, genre):
-    print(user, artist, genre)
-    # logging.error(f"Updating user preference: user={user}, artist={artist}, genre={genre}")
     query = "UPDATE users SET fav_genre = $1, fav_artist = $2, new_user = FALSE WHERE username = $3;"
     async with db.getPool().acquire() as connection:
         res = await connection.execute(query, genre, artist, user)
+        return res
+    
+async def createPlaylist(db, username, playlist="default1"): #only create playlist when there is song being added
+    query = "SELECT * FROM playlist WHERE username = $1 AND playlist_name = $2;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(query, username, playlist)
         return res
     
