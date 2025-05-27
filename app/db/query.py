@@ -32,7 +32,7 @@ async def getPlaylistItem(db, username, playlist):
         return [PlaylistWrap(**item) for item in res]
     
 async def getMusicInfoByID(db, song_idx):
-    query = "SELECT * FROM musicdata WHERE track_id = $1;"
+    query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE track_id = ANY($1) ORDER BY track_id, idx;"
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(query, song_idx)
         return [MusicWrap(**item) for item in res]

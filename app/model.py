@@ -39,5 +39,5 @@ class PlaylistWrap(BaseModel):
     playlist_id: int
     username: str
     playlist_name: str
-    song_id: int
+    song_id: str
     like: Optional[bool] = None
