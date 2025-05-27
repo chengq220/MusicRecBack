@@ -7,17 +7,6 @@ from app.auth.auth_handler import signJWT, jwtVerify
 import app.db.query as dbq
 import random 
 
-import logging
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("error.log"),  # Save to file
-        logging.StreamHandler()           # Also print to console (optional)
-    ]
-)
-
 origins = [
     "http://localhost",
     "http://localhost:3000",
@@ -121,6 +110,42 @@ async def getPlayList(payload:dict) -> dict:
     global db
     username = payload["username"]
     res = await dbq.getPlaylist(db, username)
+    return {
+        "result": res
+    }
+
+@app.post("/createPlaylist", tags=["Music"])
+async def getPlayList(payload:dict) -> dict:
+    global db
+    username, playlist = payload["username"], payload["playlist"]
+    res = await mm.createPlaylist(db, username, playlist)
+    return {
+        "result": res
+    }
+
+@app.post("/addToPlaylist", tags=["Music"])
+async def getPlayList(payload:dict) -> dict:
+    global db
+    username, playlist_name, song_idx = payload["username"], payload["playlist_name"], payload["song_idx"]
+    res = await mm.addToPlaylist(db, username, playlist_name, song_idx)
+    return {
+        "result": res
+    }
+
+@app.post("/getPlaylistItems", tags=["Music"])
+async def getPlaylistItems(payload:dict) -> dict:
+    global db
+    username, playlist_name = payload["username"], payload["playlist_name"]
+    res = await dbq.getPlaylistItem(db, username, playlist_name)
+    return {
+        "result": res
+    }
+
+@app.get("/getMusicInfoByID", tags=["Music"])
+async def getMusicByID(payload:dict) -> dict:
+    global db
+    idx = payload["song_idx"]
+    res = await dbq.getMusicInfoByID(db, idx)
     return {
         "result": res
     }

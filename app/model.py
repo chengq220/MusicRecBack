@@ -26,9 +26,18 @@ class MusicWrap(BaseModel):
 
 
 class UserWrap(BaseModel):
-    id: int
+    id: Optional[int] = None
     username: str
-    password: str
-    fav_genre: Optional[str]
-    fav_artist: Optional[str]
-    new_user: Optional[bool]
+    password: Optional[str] = None
+    fav_genre: Optional[str] = None
+    fav_artist: Optional[str] = None
+    new_user: Optional[bool] = None
+    playlist: Optional[str] = None
+
+
+class PlaylistWrap(BaseModel):
+    playlist_id: int
+    username: str
+    playlist_name: str
+    song_id: int
+    like: Optional[bool] = None

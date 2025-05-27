@@ -1,4 +1,4 @@
-from app.model import MusicWrap, UserWrap
+from app.model import MusicWrap, UserWrap, PlaylistWrap
 
 async def getTableSize(db, table):
     context = f'SELECT COUNT(*) FROM "{table}";'
@@ -20,9 +20,21 @@ async def getPref(db, user):
         return [UserWrap(**item) for item in res]
     
 async def getPlaylist(db, username):
-    query = "SELECT * FROM playlist WHERE username = $1;"
+    query = "SELECT * FROM user2playlist WHERE username = $1;"
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(query, username)
-        return res
+        return [UserWrap(**item) for item in res]
+
+async def getPlaylistItem(db, username, playlist):
+    query = "SELECT * FROM playlist WHERE username = $1 AND playlist_name = $2;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(query, username, playlist)
+        return [PlaylistWrap(**item) for item in res]
+    
+async def getMusicInfoByID(db, song_idx):
+    query = "SELECT * FROM musicdata WHERE track_id = $1;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(query, song_idx)
+        return [MusicWrap(**item) for item in res]
     
     

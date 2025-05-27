@@ -19,9 +19,15 @@ async def updateUserPreference(db, user, artist, genre):
         res = await connection.execute(query, genre, artist, user)
         return res
     
-async def createPlaylist(db, username, playlist="default1"): #only create playlist when there is song being added
-    query = "SELECT * FROM playlist WHERE username = $1 AND playlist_name = $2;"
+async def createPlaylist(db, user, playlist_name = "default1"):
+    query = "INSERT INTO user2playlist (username, playlist) VALUES ($1, $2);"
     async with db.getPool().acquire() as connection:
-        res = await connection.fetch(query, username, playlist)
+        res = await connection.execute(query, user, playlist_name)
+        return res
+    
+async def addToPlaylist(db, user, playlist_name, song_idx):
+    query = "INSERT INTO playlist (username, playlist_name, song_id) VALUES ($1, $2, $3);"
+    async with db.getPool().acquire() as connection:
+        res = await connection.execute(query, user, playlist_name, song_idx)
         return res
     
