@@ -144,10 +144,10 @@ async def getPlaylistItems(payload:dict) -> dict:
         "result": res
     }
 
-@app.get("/getMusicInfoByID/{idx}", tags=["Music"])
-async def getMusicByID(idx:str) -> dict:
-    global db
-    res = await dbq.getMusicInfoByID(db, idx)
-    return {
-        "result": res
-    }
+# @app.get("/getMusicInfoByID/{idx}", tags=["Music"])
+# async def getMusicByID(idx:str) -> dict:
+#     global db
+#     res = await dbq.getMusicInfoByID(db, idx)
+#     return {
+#         "result": res
+#     }
