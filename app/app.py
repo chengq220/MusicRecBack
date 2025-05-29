@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from app.db.DBManager import DBManager
 import app.migration.migrate as mm
 from app.auth.auth_handler import signJWT, jwtVerify
-import app.db.query as dbq
-import random 
+import app.db.query as dbq 
+import app.recommendation.utils  as rec
 
 origins = [
     "http://localhost",
@@ -60,8 +60,7 @@ async def login(user:dict) -> dict:
     if(encrypted != users[0].password):
         raise HTTPException(status_code=101, detail="Password is incorrect")
     userInfo = {
-        "username": users[0].username,
-        "new_user": users[0].new_user
+        "username": users[0].username
     }
     res = signJWT(userInfo)
     return {
@@ -96,11 +95,11 @@ async def getPref(user: dict) -> dict:
 @app.post("/getMusic", tags=["Music"])
 async def getMusic(userInfo:dict) -> dict:
     global db 
-    NUM_DESIRE = 20
-    size = await dbq.getTableSize(db, "musicdata")
-    lb = random.randint(1, size - NUM_DESIRE)
-    ub = lb + NUM_DESIRE
-    res = await dbq.getMusicBetweenIndices(db, lb, ub)
+    username, hasPref = userInfo["username"], userInfo["hasPref"]
+    if hasPref:
+        res = await rec.nnMusic(db, username)
+    else:
+        res = await rec.randomSelect(db)
     return {
         "result": res
     }
@@ -137,9 +136,8 @@ async def getPlaylistItems(payload:dict) -> dict:
     global db
     username, playlist_name = payload["username"], payload["playlist_name"]
     data = await dbq.getPlaylistItem(db, username, playlist_name)
-    print(data)
     search = [element.song_id for element in data]
-    res = await dbq.getMusicInfoByID(db, search)
+    res = await dbq.getMusicInfoBySongID(db, search)
     return {
         "result": res
     }

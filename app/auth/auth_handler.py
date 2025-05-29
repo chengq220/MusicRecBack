@@ -9,7 +9,6 @@ load_dotenv()
 def signJWT(user:dict) -> str:
     payload = {
         "username": user["username"],
-        "new_user": user["new_user"],
         "expires": time.time() + 600
     }
     token = jwt.encode(payload, os.getenv("SECRET"), algorithm=os.getenv("ALGORITHM"))

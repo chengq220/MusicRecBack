@@ -6,13 +6,6 @@ async def getTableSize(db, table):
         size = await connection.fetchval(context)
         return size
 
-async def getMusicBetweenIndices(db, lb, ub):
-    context = "SELECT * FROM musicdata WHERE idx BETWEEN $1 AND $2;"
-    async with db.getPool().acquire() as connection:
-        res = await connection.fetch(context, lb, ub)
-        return [MusicWrap(**item) for item in res]
-    
-
 async def getPref(db, user):
     context = "SELECT * FROM users WHERE username = $1;"
     async with db.getPool().acquire() as connection:
@@ -31,10 +24,22 @@ async def getPlaylistItem(db, username, playlist):
         res = await connection.fetch(query, username, playlist)
         return [PlaylistWrap(**item) for item in res]
     
-async def getMusicInfoByID(db, song_idx):
-    query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE track_id = ANY($1) ORDER BY track_id, idx;"
+async def getMusicBetweenIndices(db, lb, ub):
+    context = "SELECT * FROM musicdata WHERE id BETWEEN $1 AND $2;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(context, lb, ub)
+        return [MusicWrap(**item) for item in res]
+    
+async def getMusicInfoBySongID(db, song_idx):
+    query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE track_id = ANY($1) ORDER BY track_id, id;"
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(query, song_idx)
+        return [MusicWrap(**item) for item in res]
+    
+async def getMusicInfoByID(db, id):
+    query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE id = ANY($1) ORDER BY track_id, id;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(query, id)
         return [MusicWrap(**item) for item in res]
     
 async def nearestneighbor(db, vector, limit):
@@ -42,5 +47,11 @@ async def nearestneighbor(db, vector, limit):
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(query, vector, limit)
         return [MusicWrap(**item) for item in res]
+    
+async def getAvgPreference(db, username):
+    query = "SELECT AVG(feature)  FROM musicdata INNER JOIN playlist ON musicdata.track_id = playlist.song_id WHERE playlist.username = $1;"
+    async with db.getPool().acquire() as connection:
+        vec = await connection.fetchval(query, username)
+        return vec
     
     
