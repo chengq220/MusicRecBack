@@ -67,6 +67,28 @@ async def login(user:dict) -> dict:
         "auth_token": res
     }
 
+@app.post("/verifyToken", tags = ["Authentication"])
+async def verifyToken(payload:dict) -> dict:
+    token, username = payload["token"], payload["username"]
+    try:
+        decodedToken = jwtVerify(token)
+    except Exception:
+        return {
+            "result": False
+        }
+    if not decodedToken:
+        return {
+            "result": False
+        }
+    elif decodedToken["username"] != username:
+        return {
+            "result": False
+        }
+    else:
+        return {
+        "result": True
+        }
+
 @app.post("/updatePref", tags=["User Preference"])
 async def updatePref(pref: dict) -> dict:
     global db 
@@ -85,12 +107,6 @@ async def getPref(user: dict) -> dict:
         "res": res
     }
 
-# @app.post("/decodeToken", tags = ["decode token"])
-# async def decodeToken(inp:dict) -> dict:
-#     print("im getting called")
-#     with open("output.txt", "w") as file:
-#         file.write(f"token: {inp["token"]}")
-#     return jwtVerify(inp["token"])
 
 @app.post("/getMusic", tags=["Music"])
 async def getMusic(userInfo:dict) -> dict:
@@ -141,11 +157,3 @@ async def getPlaylistItems(payload:dict) -> dict:
     return {
         "result": res
     }
-
-# @app.get("/getMusicInfoByID/{idx}", tags=["Music"])
-# async def getMusicByID(idx:str) -> dict:
-#     global db
-#     res = await dbq.getMusicInfoByID(db, idx)
-#     return {
-#         "result": res
-#     }
