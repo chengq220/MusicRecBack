@@ -22,7 +22,7 @@ class DBManager():
     async def disconnect(self):
         if self.pool is not None:
             try:
-                self.pool.close()
+                await self.pool.close()
             except Exception as e:
                 print("Error occured when trying to close pool")
 

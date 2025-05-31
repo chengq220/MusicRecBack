@@ -1,12 +1,3 @@
-import logging
-
-# Set up logging
-# logging.basicConfig(
-#     filename='app.log',      # Log file name
-#     level=logging.ERROR,     # Only log errors and above
-#     format='%(asctime)s - %(levelname)s - %(message)s'
-# )
-
 async def registerUser(db, username, password):
     query = "INSERT INTO users (username, password) VALUES ($1, $2);"
     async with db.getPool().acquire() as connection:
@@ -27,6 +18,12 @@ async def createPlaylist(db, user, playlist_name = "default1"):
     
 async def addToPlaylist(db, user, playlist_name, song_idx):
     query = "INSERT INTO playlist (username, playlist_name, song_id) VALUES ($1, $2, $3);"
+    async with db.getPool().acquire() as connection:
+        res = await connection.execute(query, user, playlist_name, song_idx)
+        return res
+    
+async def deleteFromPlaylist(db, user, playlist_name, song_idx):
+    query = "DELETE FROM playlist WHERE username = $1 AND playlist_name = $2 AND song_id = $3;"
     async with db.getPool().acquire() as connection:
         res = await connection.execute(query, user, playlist_name, song_idx)
         return res

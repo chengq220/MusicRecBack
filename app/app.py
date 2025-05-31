@@ -107,7 +107,6 @@ async def getPref(user: dict) -> dict:
         "res": res
     }
 
-
 @app.post("/getMusic", tags=["Music"])
 async def getMusic(userInfo:dict) -> dict:
     global db 
@@ -143,6 +142,15 @@ async def getPlayList(payload:dict) -> dict:
     global db
     username, playlist_name, song_idx = payload["username"], payload["playlist_name"], payload["song_idx"]
     res = await mm.addToPlaylist(db, username, playlist_name, song_idx)
+    return {
+        "result": res
+    }
+
+@app.post("/deleteFromPlaylist", tags=["Music"])
+async def getPlayList(payload:dict) -> dict:
+    global db
+    username, playlist_name, song_idx = payload["username"], payload["playlist_name"], payload["song_idx"]
+    res = await mm.deleteFromPlaylist(db, username, playlist_name, song_idx)
     return {
         "result": res
     }
