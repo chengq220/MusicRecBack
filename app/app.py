@@ -89,23 +89,23 @@ async def verifyToken(payload:dict) -> dict:
         "result": True
         }
 
-@app.post("/updatePref", tags=["User Preference"])
-async def updatePref(pref: dict) -> dict:
-    global db 
-    user, artist, genre = pref['user'], pref['artist'], pref['genre']
-    res = await mm.updateUserPreference(db, user = user, artist = artist, genre = genre)
-    return {
-        "res": res
-    }
+# @app.post("/updatePref", tags=["User Preference"])
+# async def updatePref(pref: dict) -> dict:
+#     global db 
+#     user, artist, genre = pref['user'], pref['artist'], pref['genre']
+#     res = await mm.updateUserPreference(db, user = user, artist = artist, genre = genre)
+#     return {
+#         "res": res
+#     }
 
-@app.post("/getPref", tags=["User Preference"])
-async def getPref(user: dict) -> dict:
-    global db 
-    user = user["user"]
-    res = await dbq.getPref(db, user = user)
-    return {
-        "res": res
-    }
+# @app.post("/getPref", tags=["User Preference"])
+# async def getPref(user: dict) -> dict:
+#     global db 
+#     user = user["user"]
+#     res = await dbq.getPref(db, user = user)
+#     return {
+#         "res": res
+#     }
 
 @app.post("/getMusic", tags=["Music"])
 async def getMusic(userInfo:dict) -> dict:

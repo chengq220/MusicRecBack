@@ -43,7 +43,7 @@ async def getMusicInfoByID(db, id):
         return [MusicWrap(**item) for item in res]
     
 async def nearestneighbor(db, vector, limit):
-    query = "SELECT DISTINCT ON (track_id) * FROM musicdata ORDER BY track_id, feature <-> $1 LIMIT $2;"
+    query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE track_id NOT IN (SELECT song_id FROM playlist) ORDER BY track_id, feature <-> $1 LIMIT $2;"
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(query, vector, limit)
         return [MusicWrap(**item) for item in res]
