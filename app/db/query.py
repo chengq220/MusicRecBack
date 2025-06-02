@@ -53,5 +53,18 @@ async def getAvgPreference(db, username):
     async with db.getPool().acquire() as connection:
         vec = await connection.fetchval(query, username)
         return vec
+
+async def patternMatchSearch(db, category, item, limit):
+    if(category == "Artist"):
+        query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE artists ~* $1 ORDER BY track_id LIMIT $2;"
+    elif(category == "Genre"):
+        query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE genre ~* $1 ORDER BY track_id LIMIT $2;"
+    else:
+        query = "SELECT DISTINCT ON (track_id) * FROM musicdata WHERE track_name ~* $1 ORDER BY track_id LIMIT $2;"
+    async with db.getPool().acquire() as connection:
+        res = await connection.fetch(query, item, limit)
+        return [MusicWrap(**item) for item in res]
+    
+
     
     

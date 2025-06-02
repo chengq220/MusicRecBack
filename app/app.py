@@ -165,3 +165,12 @@ async def getPlaylistItems(payload:dict) -> dict:
     return {
         "result": res
     }
+
+@app.post("/search", tags=["Search"])
+async def searchItem(payload:dict) -> dict:
+    global db
+    category, query = payload["category"], payload["query"]
+    res = await dbq.patternMatchSearch(db, category, query, 10)
+    return {
+        "result": res
+    }
