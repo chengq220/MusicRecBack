@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db.DBManager import DBManager
@@ -45,7 +45,7 @@ async def register(user: dict) -> dict:
     username, password = user['username'], user['password']
     users = await DBManager.getUser(db, username)
     if(len(users) > 0):
-        raise HTTPException(status_code=101, detail="Username already exists")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Username already exist")
     encrypted = DBManager.encryptPassword(password = password)
     res = await mm.registerUser(db, username = username, password = encrypted)
     return {
@@ -58,10 +58,10 @@ async def login(user:dict) -> dict:
     username, password = user['username'], user['password']
     users = await DBManager.getUser(db, username)
     if(len(users) == 0):
-        raise HTTPException(status_code=101, detail="User does not exist")
+       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
     encrypted = DBManager.encryptPassword(password = password)
     if(encrypted != users[0].password):
-        raise HTTPException(status_code=101, detail="Password is incorrect")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Password is incorrect")
     userInfo = {
         "username": users[0].username
     }
