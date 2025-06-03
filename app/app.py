@@ -5,7 +5,9 @@ from app.db.DBManager import DBManager
 import app.migration.migrate as mm
 from app.auth.auth_handler import signJWT, jwtVerify
 import app.db.query as dbq 
-import app.recommendation.utils  as rec
+import app.recommendation.rec  as rec
+from app.api.spotify import Spotify
+from app.util import insertThumbnail
 
 origins = [
     "http://localhost",
@@ -14,6 +16,7 @@ origins = [
 ]
 
 db = DBManager()
+spfy = Spotify()
 
 @asynccontextmanager
 async def lifespan(app):
@@ -86,26 +89,8 @@ async def verifyToken(payload:dict) -> dict:
         }
     else:
         return {
-        "result": True
+            "result": True
         }
-
-# @app.post("/updatePref", tags=["User Preference"])
-# async def updatePref(pref: dict) -> dict:
-#     global db 
-#     user, artist, genre = pref['user'], pref['artist'], pref['genre']
-#     res = await mm.updateUserPreference(db, user = user, artist = artist, genre = genre)
-#     return {
-#         "res": res
-#     }
-
-# @app.post("/getPref", tags=["User Preference"])
-# async def getPref(user: dict) -> dict:
-#     global db 
-#     user = user["user"]
-#     res = await dbq.getPref(db, user = user)
-#     return {
-#         "res": res
-#     }
 
 @app.post("/getMusic", tags=["Music"])
 async def getMusic(userInfo:dict) -> dict:
@@ -115,11 +100,12 @@ async def getMusic(userInfo:dict) -> dict:
         res = await rec.nnMusic(db, username)
     else:
         res = await rec.randomSelect(db)
+    res = insertThumbnail(spfy, res)
     return {
         "result": res
     }
 
-@app.post("/getPlaylist", tags=["Music"])
+@app.post("/getPlaylist", tags=["Music, Deprecated"])
 async def getPlayList(payload:dict) -> dict:
     global db
     username = payload["username"]
@@ -128,7 +114,7 @@ async def getPlayList(payload:dict) -> dict:
         "result": res
     }
 
-@app.post("/createPlaylist", tags=["Music"])
+@app.post("/createPlaylist", tags=["Music, Deprecated"])
 async def getPlayList(payload:dict) -> dict:
     global db
     username, playlist = payload["username"], payload["playlist"]
@@ -162,6 +148,7 @@ async def getPlaylistItems(payload:dict) -> dict:
     data = await dbq.getPlaylistItem(db, username, playlist_name)
     search = [element.song_id for element in data]
     res = await dbq.getMusicInfoBySongID(db, search)
+    res = insertThumbnail(spfy, res)
     return {
         "result": res
     }
@@ -171,6 +158,7 @@ async def searchItem(payload:dict) -> dict:
     global db
     category, query = payload["category"], payload["query"]
     res = await dbq.patternMatchSearch(db, category, query, 10)
+    res = insertThumbnail(spfy, res)
     return {
         "result": res
     }

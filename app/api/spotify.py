@@ -25,5 +25,3 @@ class Spotify():
             images.append(img_url)
         return images
         
-    
-
