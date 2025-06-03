@@ -11,6 +11,5 @@ async def randomSelect(db):
 async def nnMusic(db, username):
     NUM_DESIRE = 10
     vec = await dbq.getAvgPreference(db, username)
-    print(vec)
     res = await dbq.nearestneighbor(db, vec, NUM_DESIRE)
     return res

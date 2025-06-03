@@ -2,7 +2,7 @@ import asyncpg
 import os
 from dotenv import load_dotenv
 import hashlib
-from app.model import MusicWrap, UserWrap
+from app.model import UserWrap
 
 class DBManager():
     def __init__(self):
