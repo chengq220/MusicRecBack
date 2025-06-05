@@ -97,7 +97,7 @@ async def getMusic(userInfo:dict) -> dict:
     username = userInfo["username"]
     existPlaylist = await dbq.getPlaylistItem(db, username)
 
-    if len(existPlaylist) <= 0:
+    if len(existPlaylist) > 0:
         res = await rec.nnMusic(db, username)
     else:
         res = await rec.randomSelect(db)
