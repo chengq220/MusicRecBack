@@ -18,10 +18,14 @@ async def getPlaylist(db, username):
         res = await connection.fetch(query, username)
         return [UserWrap(**item) for item in res]
 
-async def getPlaylistItem(db, username, playlist):
-    query = "SELECT * FROM playlist WHERE username = $1 AND playlist_name = $2;"
+async def getPlaylistItem(db, username, playlist=None):
     async with db.getPool().acquire() as connection:
-        res = await connection.fetch(query, username, playlist)
+        if(playlist):
+            query = "SELECT * FROM playlist WHERE username = $1 AND playlist_name = $2;"
+            res = await connection.fetch(query, username, playlist)
+        else:
+            query = "SELECT * FROM playlist WHERE username = $1;"
+            res = await connection.fetch(query, username)
         return [PlaylistWrap(**item) for item in res]
     
 async def getMusicBetweenIndices(db, lb, ub):

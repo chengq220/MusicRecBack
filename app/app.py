@@ -94,8 +94,10 @@ async def verifyToken(payload:dict) -> dict:
 @app.post("/getMusic", tags=["Music"])
 async def getMusic(userInfo:dict) -> dict:
     global db 
-    username, hasPref = userInfo["username"], userInfo["hasPref"]
-    if hasPref:
+    username = userInfo["username"]
+    existPlaylist = await dbq.getPlaylistItem(db, username)
+
+    if len(existPlaylist) <= 0:
         res = await rec.nnMusic(db, username)
     else:
         res = await rec.randomSelect(db)
