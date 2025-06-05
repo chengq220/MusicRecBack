@@ -7,7 +7,6 @@ from app.auth.auth_handler import signJWT, jwtVerify
 import app.db.query as dbq 
 import app.recommendation.rec  as rec
 from app.api.spotify import Spotify
-from app.util import insertThumbnail
 
 origins = [
     "http://localhost",
@@ -100,7 +99,10 @@ async def getMusic(userInfo:dict) -> dict:
         res = await rec.nnMusic(db, username)
     else:
         res = await rec.randomSelect(db)
-    res = insertThumbnail(spfy, res)
+    ids = [item.track_id for item in res]
+    thmb = spfy.queryById(ids)
+    for idx, li in enumerate(thmb):
+        res[idx].thumbnail = li
     return {
         "result": res
     }
@@ -148,7 +150,10 @@ async def getPlaylistItems(payload:dict) -> dict:
     data = await dbq.getPlaylistItem(db, username, playlist_name)
     search = [element.song_id for element in data]
     res = await dbq.getMusicInfoBySongID(db, search)
-    res = insertThumbnail(spfy, res)
+    ids = [item.track_id for item in res]
+    thmb = spfy.queryById(ids)
+    for idx, li in enumerate(thmb):
+        res[idx].thumbnail = li
     return {
         "result": res
     }
@@ -158,7 +163,12 @@ async def searchItem(payload:dict) -> dict:
     global db
     category, query = payload["category"], payload["query"]
     res = await dbq.patternMatchSearch(db, category, query, 10)
-    res = insertThumbnail(spfy, res)
+    ids = [item.track_id for item in res]
+    exists = await dbq.existInPlaylist(db, ids, "best_playlist")
+    thmb = spfy.queryById(ids)
+    for idx, li in enumerate(thmb):
+        res[idx].thumbnail = li
+        res[idx].existInPlaylist = exists[idx]["exists"]
     return {
         "result": res
     }

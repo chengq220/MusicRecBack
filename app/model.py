@@ -11,6 +11,7 @@ class MusicWrap(BaseModel):
     track_genre: str
     feature: str
     thumbnail: Optional[str] = None
+    existInPlaylist: Optional[bool] = None
 
 # Wrapper for user profile
 class UserWrap(BaseModel):
