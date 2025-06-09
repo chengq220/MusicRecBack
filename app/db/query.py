@@ -71,7 +71,7 @@ async def patternMatchSearch(db, category, item, limit):
                     ORDER BY track_id LIMIT $2;"""
     elif(category == "Genre"):
         query = """SELECT DISTINCT ON (track_id) * 
-                    FROM musicdata WHERE genre ~* $1 
+                    FROM musicdata WHERE track_genre ~* $1 
                     ORDER BY track_id LIMIT $2;"""
     else:
         query = """SELECT DISTINCT ON (track_id) * 
