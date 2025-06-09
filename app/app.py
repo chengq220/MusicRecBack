@@ -101,10 +101,12 @@ async def getMusic(payload:dict) -> dict:
     else:
         res = await rec.randomSelect(db)
     ids = [item.track_id for item in res]
-    thmb = spfy.queryById(ids)
-    exists = await dbq.existInPlaylist(db, ids, playlist)
-    for idx, li in enumerate(thmb):
-        res[idx].thumbnail = li
+    exists = []
+    if(len(ids) > 0):
+        thmb = spfy.queryById(ids)
+        exists = await dbq.existInPlaylist(db, ids, playlist)
+        for idx, li in enumerate(thmb):
+            res[idx].thumbnail = li
     return {
         "result": res,
         "exist": exists
@@ -167,10 +169,12 @@ async def searchItem(payload:dict) -> dict:
     category, query, playlist = payload["category"], payload["query"], payload["playlists"]
     res = await dbq.patternMatchSearch(db, category, query, 10)
     ids = [item.track_id for item in res]
-    exists = await dbq.existInPlaylist(db, ids, playlist)
-    thmb = spfy.queryById(ids)
-    for idx, li in enumerate(thmb):
-        res[idx].thumbnail = li
+    exists = []
+    if(len(ids) > 0):
+        exists = await dbq.existInPlaylist(db, ids, playlist)
+        thmb = spfy.queryById(ids)
+        for idx, li in enumerate(thmb):
+            res[idx].thumbnail = li
     return {
         "result": res, 
         "exist": exists
