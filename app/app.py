@@ -94,19 +94,20 @@ async def verifyToken(payload:dict) -> dict:
 @app.post("/getMusic", tags=["Music"])
 async def getMusic(payload:dict) -> dict:
     global db 
-    username = payload["username"]
+    username, playlist = payload["username"], payload["playlists"]
     existPlaylist = await dbq.getPlaylistItem(db, username)
-
     if len(existPlaylist) > 0:
         res = await rec.nnMusic(db, username)
     else:
         res = await rec.randomSelect(db)
     ids = [item.track_id for item in res]
     thmb = spfy.queryById(ids)
+    exists = await dbq.existInPlaylist(db, ids, playlist)
     for idx, li in enumerate(thmb):
         res[idx].thumbnail = li
     return {
-        "result": res
+        "result": res,
+        "exist": exists
     }
 
 @app.post("/getPlaylist", tags=["Music"])
