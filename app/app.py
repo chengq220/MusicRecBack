@@ -112,7 +112,7 @@ async def getMusic(payload:dict) -> dict:
 @app.post("/getPlaylist", tags=["Music"])
 async def getPlayListNames(payload:dict) -> dict:
     global db
-    username = payload["username"],
+    username = payload["username"]
     res = await dbq.getPlaylistNames(db, username)
     return {
         "result": res
