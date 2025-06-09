@@ -92,9 +92,9 @@ async def verifyToken(payload:dict) -> dict:
         }
 
 @app.post("/getMusic", tags=["Music"])
-async def getMusic(userInfo:dict) -> dict:
+async def getMusic(payload:dict) -> dict:
     global db 
-    username = userInfo["username"]
+    username = payload["username"]
     existPlaylist = await dbq.getPlaylistItem(db, username)
 
     if len(existPlaylist) > 0:
@@ -109,17 +109,17 @@ async def getMusic(userInfo:dict) -> dict:
         "result": res
     }
 
-@app.post("/getPlaylist", tags=["Music, Deprecated"])
-async def getPlayList(payload:dict) -> dict:
+@app.post("/getPlaylist", tags=["Music"])
+async def getPlayListNames(payload:dict) -> dict:
     global db
-    username = payload["username"]
-    res = await dbq.getPlaylist(db, username)
+    username = payload["username"],
+    res = await dbq.getPlaylistNames(db, username)
     return {
         "result": res
     }
 
-@app.post("/createPlaylist", tags=["Music, Deprecated"])
-async def getPlayList(payload:dict) -> dict:
+@app.post("/createPlaylist", tags=["Music"])
+async def createPlaylist(payload:dict) -> dict:
     global db
     username, playlist = payload["username"], payload["playlist"]
     res = await mm.createPlaylist(db, username, playlist)
@@ -128,7 +128,7 @@ async def getPlayList(payload:dict) -> dict:
     }
 
 @app.post("/addToPlaylist", tags=["Music"])
-async def getPlayList(payload:dict) -> dict:
+async def addToPlayList(payload:dict) -> dict:
     global db
     username, playlist_name, song_idx = payload["username"], payload["playlist_name"], payload["song_idx"]
     res = await mm.addToPlaylist(db, username, playlist_name, song_idx)
@@ -137,7 +137,7 @@ async def getPlayList(payload:dict) -> dict:
     }
 
 @app.post("/deleteFromPlaylist", tags=["Music"])
-async def getPlayList(payload:dict) -> dict:
+async def delFromPlaylist(payload:dict) -> dict:
     global db
     username, playlist_name, song_idx = payload["username"], payload["playlist_name"], payload["song_idx"]
     res = await mm.deleteFromPlaylist(db, username, playlist_name, song_idx)
@@ -163,14 +163,14 @@ async def getPlaylistItems(payload:dict) -> dict:
 @app.post("/search", tags=["Search"])
 async def searchItem(payload:dict) -> dict:
     global db
-    category, query = payload["category"], payload["query"]
+    category, query, playlist = payload["category"], payload["query"], payload["playlists"]
     res = await dbq.patternMatchSearch(db, category, query, 10)
     ids = [item.track_id for item in res]
-    exists = await dbq.existInPlaylist(db, ids, "best_playlist")
+    exists = await dbq.existInPlaylist(db, ids, playlist)
     thmb = spfy.queryById(ids)
     for idx, li in enumerate(thmb):
         res[idx].thumbnail = li
-        res[idx].existInPlaylist = exists[idx]["exists"]
     return {
-        "result": res
+        "result": res, 
+        "exist": exists
     }

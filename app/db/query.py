@@ -12,7 +12,7 @@ async def getPref(db, user):
         res = await connection.fetch(context, user)
         return [UserWrap(**item) for item in res]
     
-async def getPlaylist(db, username):
+async def getPlaylistNames(db, username):
     query = "SELECT * FROM user2playlist WHERE username = $1;"
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(query, username)
@@ -83,12 +83,24 @@ async def patternMatchSearch(db, category, item, limit):
     
 
 async def existInPlaylist(db, ids, playlist_name):
-    query = """WITH input_idx AS (SELECT UNNEST($1::text[]) AS idx) 
-                SELECT playlist.song_id IS NOT NULL AS exists
-                FROM input_idx LEFT JOIN playlist ON playlist.song_id = input_idx.idx AND playlist.playlist_name = $2"""
+    query = """ WITH 
+                input_idx AS (SELECT UNNEST($1::text[]) AS song_id),
+                playlist_idx AS (SELECT UNNEST($2::text[]) AS playlist_name),
+                cross_pairs AS (
+                    SELECT song_id, playlist_name FROM input_idx CROSS JOIN playlist_idx
+                ),
+                exist_pair AS (SELECT 
+                cross_pairs.song_id,
+                cross_pairs.playlist_name,
+                (playlist.song_id IS NOT NULL) AS exists
+                FROM cross_pairs
+                LEFT JOIN playlist
+                ON playlist.song_id = cross_pairs.song_id AND playlist.playlist_name = cross_pairs.playlist_name)
+                SELECT * from exist_pair where exists = true;
+                """
     async with db.getPool().acquire() as connection:
         res = await connection.fetch(query, ids, playlist_name)
-        return res
+        return [dict(item) for item in res]
     
     
 
