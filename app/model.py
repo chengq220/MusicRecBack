@@ -25,4 +25,3 @@ class PlaylistWrap(BaseModel):
     username: str
     playlist_name: str
     song_id: str
-    favorite: Optional[bool] = None
