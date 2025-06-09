@@ -18,8 +18,6 @@ class UserWrap(BaseModel):
     id: Optional[int] = None
     username: str
     password: Optional[str] = None
-    fav_genre: Optional[str] = None
-    fav_artist: Optional[str] = None
     playlist: Optional[str] = None
 
 # Map from user to playlist
